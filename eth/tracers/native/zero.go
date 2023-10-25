@@ -80,7 +80,8 @@ func (t *zeroTracer) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, sco
 		t.addSLOADToAccount(caller, slot)
 	case stackLen >= 1 && op == vm.SSTORE:
 		slot := common.Hash(stackData[stackLen-1].Bytes32())
-		t.addSSTOREToAccount(caller, slot)
+		value := common.Hash(stackData[stackLen-2].Bytes32())
+		t.addSSTOREToAccount(caller, slot, value)
 	case stackLen >= 1 && (op == vm.EXTCODECOPY || op == vm.EXTCODEHASH || op == vm.EXTCODESIZE || op == vm.BALANCE || op == vm.SELFDESTRUCT):
 		addr := common.Address(stackData[stackLen-1].Bytes20())
 		t.addAccountToTrace(addr, false)
@@ -156,6 +157,6 @@ func (t *zeroTracer) addSLOADToAccount(addr common.Address, key common.Hash) {
 	t.tx.Trace[addr].ReadStorage[key] = t.env.StateDB.GetState(addr, key)
 }
 
-func (t *zeroTracer) addSSTOREToAccount(addr common.Address, key common.Hash) {
-	t.tx.Trace[addr].WriteStorage[key] = t.env.StateDB.GetState(addr, key)
+func (t *zeroTracer) addSSTOREToAccount(addr common.Address, key common.Hash, value common.Hash) {
+	t.tx.Trace[addr].WriteStorage[key] = value
 }
